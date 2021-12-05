@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/get"
+        android:icon="@drawable/ic_baseline_arrow_downward_24_get"
+        android:title="Get"
+        android:checked="false"
+        
+
+        />
+
+    <item
+        android:id="@+id/post"
+        android:icon="@drawable/ic_baseline_north_east_24_post"
+        android:title="Post"/>
+    <item
+        android:id="@+id/update"
+        android:icon="@drawable/ic_baseline_autorenew_24"
+        android:title="Update"
+
+        />
+
+    <item android:id="@+id/delete"
+        android:icon="@drawable/ic_baseline_delete_forever_24"
+        android:title="Delete"/>
+
+
+
+</menu>
