@@ -11,10 +11,10 @@
     # Glide
     # Kotlin Fragments
     # RecyclerView
-    # Coroutines(getFragment.kt and deleteFragment.kt for now)
+    # Coroutines(For improve async programming experince)
     
 # Features to be added in the future
-     # Coroutines(For improve async programming quality)
+     # Jetpack Compose State Management
  
   
     
