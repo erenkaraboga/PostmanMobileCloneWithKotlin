@@ -14,11 +14,12 @@ import com.example.carapi.model.BrandModel
 import com.example.carapi.service.CarApi
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_get.*
+import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-private val BASE_URL ="https://carrestfulapi.azurewebsites.net/"
+private var job : Job?=null
 private var brandModels : ArrayList<BrandModel>?=null
 private var recyclerViewAdapter: RecyclerViewAdapter?=null
 
@@ -41,35 +42,29 @@ class getFragment : Fragment(),RecyclerViewAdapter.Listener {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_get, container, false)
     }
-    private fun loadData(){
-        var progress : ProgressBar = this.getprogressBar
-        val call = CarApi().getData()
+    private fun loadData() {
+        var progress: ProgressBar = this.getprogressBar
         progress.visibility = View.VISIBLE
-        call.enqueue(object :Callback<List<BrandModel>>{
-            override fun onResponse(
-                call: Call<List<BrandModel>>,
-                response: Response<List<BrandModel>>
-            ) {
-                if (response.isSuccessful){
+        job = CoroutineScope(Dispatchers.IO).launch {
+            val response = CarApi().getData()
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) {
                     response.body()?.let {
-                        brandModels= ArrayList(it)
+                        brandModels = ArrayList(it)
                         brandModels.let {
-                            recyclerViewAdapter= RecyclerViewAdapter(brandModels!!,this@getFragment)
-                            recyclerView.adapter=recyclerViewAdapter
+                            recyclerViewAdapter =
+                                RecyclerViewAdapter(brandModels!!, this@getFragment)
+                            recyclerView.adapter = recyclerViewAdapter
                             progress.visibility = View.INVISIBLE
 
                         }
                     }
-
                 }
-            }
-            override fun onFailure(call: Call<List<BrandModel>>, t: Throwable) {
-                t.printStackTrace()
+
             }
 
-        })
+
+        }
 
     }
-
-
 }

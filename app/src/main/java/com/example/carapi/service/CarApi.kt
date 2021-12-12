@@ -12,7 +12,7 @@ interface CarApi {
     //https://carrestfulapi.azurewebsites.net/
     // api/brands
      @GET("api/brands/ ")
-     fun getData() : retrofit2.Call<List<BrandModel>>
+    suspend fun getData() : retrofit2.Response<List<BrandModel>>
 
      @Multipart
      @POST("api/brands/")
