@@ -67,4 +67,9 @@ class getFragment : Fragment(),RecyclerViewAdapter.Listener {
         }
 
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        job?.cancel()
+    }
 }

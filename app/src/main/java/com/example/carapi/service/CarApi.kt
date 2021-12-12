@@ -49,8 +49,8 @@ interface CarApi {
     ):retrofit2.Call<RequestBody>
 
      @DELETE("api/brands/{id}")
-     fun delete(@Path("id") id : Int
-     ):retrofit2.Call<Unit>
+    suspend fun delete(@Path("id") id : Int
+     ):retrofit2.Response<Unit>
 
      companion object {
         operator fun invoke(): CarApi {

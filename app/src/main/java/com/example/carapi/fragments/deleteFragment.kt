@@ -7,12 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.example.carapi.R
+import com.example.carapi.adapter.RecyclerViewAdapter
 import com.example.carapi.service.CarApi
 import kotlinx.android.synthetic.main.fragment_delete.*
+import kotlinx.android.synthetic.main.fragment_get.*
+import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
 private val BASE_URL ="https://carrestfulapi.azurewebsites.net/"
+private var job : Job?=null
 class deleteFragment : Fragment() {
 
     override fun onCreateView(
@@ -38,20 +43,20 @@ class deleteFragment : Fragment() {
     fun deleteData(){
         Toast.makeText(context,"If this id is in the records, it will be deleted.",Toast.LENGTH_SHORT).show()
         var id = editTextId.text.toString()
-        val call =CarApi().delete(id.toInt())
 
-        call.enqueue(object : Callback<Unit> {
+        job = CoroutineScope(Dispatchers.IO).launch {
+            val response = CarApi().delete(id.toInt())
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) {
+                    response.body()?.let {
 
-            override fun onFailure(call: Call<Unit>, t: Throwable) {
-
-            }
-
-            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-                response.body()?.let {
+                        }
+                    }
                 }
-                   }
+            }
         }
-        )
-
+    override fun onDestroy() {
+        super.onDestroy()
+        job?.cancel()
     }
-}
+    }
