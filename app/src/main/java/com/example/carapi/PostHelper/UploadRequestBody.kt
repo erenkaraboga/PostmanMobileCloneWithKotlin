@@ -9,7 +9,6 @@ class UploadRequestBody(
     private val file: File,
     private val contentType: String,
 ) : RequestBody() {
-
     override fun contentType() = MediaType.parse("$contentType/*")
     override fun contentLength() = file.length()
     override fun writeTo(sink: BufferedSink) {

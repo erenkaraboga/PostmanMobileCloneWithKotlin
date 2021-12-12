@@ -17,27 +17,25 @@ import android.widget.Toast
 import com.example.carapi.service.CarApi
 import kotlinx.android.synthetic.main.fragment_get.*
 import kotlinx.android.synthetic.main.row_layout.*
+import kotlinx.coroutines.*
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-
+private var job : Job?=null
 const val REQUEST_CODE_PICK_IMAGE = 101
 private var selectedImageUri: Uri? = null
-class postFragment : Fragment() {
+class PostFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         postImageView.setOnClickListener {
             openImageChooser()
         }
         postButton.setOnClickListener {
-            var name = nameText.text
-            var madeby = madebyText.text
+            val name = nameText.text
+            val madeby = madebyText.text
             if (name.isEmpty()||madeby.isEmpty()){
                 nameText.error="Name Required"
                 madebyText.error ="MadeBy required"
@@ -53,7 +51,6 @@ class postFragment : Fragment() {
     ): View? {
         return inflater.inflate(R.layout.fragment_post, container, false)
     }
-
     private fun openImageChooser() {
         Intent(Intent.ACTION_PICK).also {
             it.type = "image/*"
@@ -73,7 +70,7 @@ class postFragment : Fragment() {
             }
         }
     }
-    fun ContentResolver.getFileName(fileUri: Uri): String {
+    private fun ContentResolver.getFileName(fileUri: Uri): String {
         var name = ""
         val returnCursor = this.query(fileUri, null, null, null, null)
         if (returnCursor != null) {
@@ -84,70 +81,61 @@ class postFragment : Fragment() {
         }
         return name
     }
-    private fun uploadImage(){
+    private fun uploadImage() {
         if (selectedImageUri == null) {
-
-           var call = CarApi().postDataNoImage(
-                  name = nameText.text.toString(),
-                  madeby = madebyText.text.toString()
-            )
-
-            call.enqueue(object : Callback<RequestBody> {
-                override fun onFailure(call: Call<RequestBody>, t: Throwable) {
-                    t.printStackTrace()
-                }
-                override fun onResponse(
-                    call: Call<RequestBody>,
-
-                    response: Response<RequestBody>
+            job = CoroutineScope(Dispatchers.IO).launch {
+                val response = CarApi().postDataNoImage(
+                    name = nameText.text.toString(),
+                    madeby = madebyText.text.toString()
                 )
-                {
-                    if (response.isSuccessful){
-                        response.body()?.let {
-                        }
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(context,"Posted Successfully", Toast.LENGTH_SHORT).show()
+                    }
+                    else{
+                        Toast.makeText(context,response.message(), Toast.LENGTH_SHORT).show()
                     }
                 }
-            })
-            Toast.makeText(context,"Posted",Toast.LENGTH_SHORT).show()
-        }else{
-            var contentResolver= requireActivity().contentResolver
-            var cacheDir = getActivity()?.getCacheDir()
+            }
+        } else {
+            val contentResolver = requireActivity().contentResolver
+            val cacheDir = getActivity()?.getCacheDir()
             val parcelFileDescriptor =
                 contentResolver.openFileDescriptor(selectedImageUri!!, "r", null) ?: return
-
             val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
             val file = File(cacheDir, contentResolver.getFileName(selectedImageUri!!))
             val outputStream = FileOutputStream(file)
             inputStream.copyTo(outputStream)
             val body = UploadRequestBody(file, "image")
 
-            CarApi().postData(
-                MultipartBody.Part.createFormData(
-                    "image",
-                    file.name,
-                    body
-                ),
-                RequestBody.create(MediaType.parse("multipart/form-data"), nameText.text.toString()),
-                RequestBody.create(MediaType.parse("multipart/form-data"), madebyText.text.toString())
-
-
-            ).enqueue(object : Callback<RequestBody> {
-
-                override fun onFailure(call: Call<RequestBody>, t: Throwable) {
-                     t.printStackTrace()
-                }
-
-                override fun onResponse(
-                    call: Call<RequestBody>,
-                    response: Response<RequestBody>
-                ) {
-                    response.body()?.let {
+            job = CoroutineScope(Dispatchers.IO).launch {
+                val response = CarApi().postData(
+                    MultipartBody.Part.createFormData(
+                        "image",
+                        file.name,
+                        body
+                    ),
+                    RequestBody.create(
+                        MediaType.parse("multipart/form-data"),
+                        nameText.text.toString()
+                    ),
+                    RequestBody.create(
+                        MediaType.parse("multipart/form-data"),
+                        madebyText.text.toString()
+                    )
+                )
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(context,"Posted Successfully", Toast.LENGTH_SHORT).show()
+                    }else{
+                        Toast.makeText(context,response.message(), Toast.LENGTH_SHORT).show()
                     }
-                       }
-            })
-            Toast.makeText(context,"Posted", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
-
     }
-
+    override fun onDestroy() {
+        super.onDestroy()
+        job?.cancel()
+    }
 }

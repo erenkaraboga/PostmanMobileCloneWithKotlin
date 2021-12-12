@@ -9,48 +9,45 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 
 interface CarApi {
-    //https://carrestfulapi.azurewebsites.net/
-    // api/brands
      @GET("api/brands/ ")
     suspend fun getData() : retrofit2.Response<List<BrandModel>>
 
      @Multipart
      @POST("api/brands/")
-     fun postData(
+   suspend  fun postData(
          @Part image : MultipartBody.Part,
          @Part("madeby") madeby:RequestBody,
          @Part("name") name:RequestBody
-     ):retrofit2.Call<RequestBody>
+     ):retrofit2.Response<Void>
 
      @FormUrlEncoded
      @POST("api/brands/")
-     fun postDataNoImage(
+    suspend fun postDataNoImage(
         @Field("madeby") madeby : String,
         @Field("name") name : String,
 
-    ):retrofit2.Call<RequestBody>
+    ):retrofit2.Response<Void>
 
     @FormUrlEncoded
     @PUT("api/brands/{id}")
-    fun updateDataNoImage(
+   suspend fun updateDataNoImage(
         @Path("id") id : Int,
         @Field("madeby") madeby : String,
         @Field("name") name : String,
-
-        ):retrofit2.Call<RequestBody>
+        ):retrofit2.Response<Void>
 
     @Multipart
     @PUT("api/brands/{id}")
-    fun updateData(
+   suspend fun updateData(
         @Path("id") id : Int,
         @Part image : MultipartBody.Part,
         @Part("madeby") madeby:RequestBody,
         @Part("name") name:RequestBody
-    ):retrofit2.Call<RequestBody>
+    ):retrofit2.Response<Void>
 
      @DELETE("api/brands/{id}")
     suspend fun delete(@Path("id") id : Int
-     ):retrofit2.Response<Unit>
+     ):retrofit2.Response<Void>
 
      companion object {
         operator fun invoke(): CarApi {

@@ -11,7 +11,6 @@ import kotlinx.android.synthetic.main.row_layout.view.*
 class RecyclerViewAdapter(private val list: List<BrandModel>, private val listener:Listener ) : RecyclerView.Adapter<RecyclerViewAdapter.RowHolder>() {
     interface Listener{
         fun onItemClick(brandModel: BrandModel){
-
         }
     }
     class RowHolder(view : View) : RecyclerView.ViewHolder(view) {
@@ -27,8 +26,6 @@ class RecyclerViewAdapter(private val list: List<BrandModel>, private val listen
                          .with(itemView.context)
                          .load(R.drawable.noimage)
                          .into(itemView.imageView3)
-
-
                  }else{
                      itemView.setOnClickListener {
                          listener.onItemClick(brandModel)
@@ -42,7 +39,6 @@ class RecyclerViewAdapter(private val list: List<BrandModel>, private val listen
                          .load(brandModel.imageUrl)
                          .into(itemView.imageView3)
                  }
-
              }
     }
 
@@ -50,11 +46,9 @@ class RecyclerViewAdapter(private val list: List<BrandModel>, private val listen
             val view = LayoutInflater.from(parent.context).inflate(R.layout.row_layout,parent,false)
              return  RowHolder(view)
     }
-
     override fun onBindViewHolder(holder: RowHolder, position: Int) {
            holder.bind(list[position],listener)
     }
-
     override fun getItemCount(): Int {
       return list.size
     }

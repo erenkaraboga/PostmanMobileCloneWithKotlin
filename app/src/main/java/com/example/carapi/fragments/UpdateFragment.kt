@@ -19,29 +19,25 @@ import kotlinx.android.synthetic.main.fragment_post.*
 import kotlinx.android.synthetic.main.fragment_post.madebyText
 import kotlinx.android.synthetic.main.fragment_post.nameText
 import kotlinx.android.synthetic.main.fragment_update.*
+import kotlinx.coroutines.*
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-
-const val REQUEST_CODE_PICK_IMAGEE= 101
+private var job : Job?=null
 private var selectedImageUri: Uri? = null
-class updateFragment : Fragment() {
-
+class UpdateFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         updateImageView.setOnClickListener {
             openImageChooser()
         }
         updateButton.setOnClickListener {
-            var name = nameText.text
-            var madeby = madebyText.text
-            var id = editTextUpdateId .text
+            val name = nameText.text
+            val madeby = madebyText.text
+            val id = editTextUpdateId .text
             if (name.isEmpty()||madeby.isEmpty()||id.isEmpty()){
 
                 nameText.error="Name Required"
@@ -52,7 +48,6 @@ class updateFragment : Fragment() {
             }
         }
     }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -79,7 +74,7 @@ class updateFragment : Fragment() {
             }
         }
     }
-    fun ContentResolver.getFileName(fileUri: Uri): String {
+    private fun ContentResolver.getFileName(fileUri: Uri): String {
         var name = ""
         val returnCursor = this.query(fileUri, null, null, null, null)
         if (returnCursor != null) {
@@ -92,34 +87,26 @@ class updateFragment : Fragment() {
     }
     private fun updateData(){
         if (selectedImageUri == null) {
-
-            var idd = editTextUpdateId.text.toString().toInt()
-            var call = CarApi().updateDataNoImage(
-                id =idd,
-                name = nameText.text.toString(),
-                madeby = madebyText.text.toString()
-            )
-
-            call.enqueue(object : Callback<RequestBody> {
-                override fun onFailure(call: Call<RequestBody>, t: Throwable) {
-                    t.printStackTrace()
-                }
-                override fun onResponse(
-                    call: Call<RequestBody>,
-
-                    response: Response<RequestBody>
+            val idd = editTextUpdateId.text.toString().toInt()
+            job = CoroutineScope(Dispatchers.IO).launch {
+                val response = CarApi().updateDataNoImage(
+                    id =idd,
+                    name = nameText.text.toString(),
+                    madeby = madebyText.text.toString()
                 )
-                {
-                    if (response.isSuccessful){
-                        response.body()?.let {
-                        }
+                withContext(Dispatchers.Main) {
+                    if(response.isSuccessful) {
+                        Toast.makeText(context,"Updated Successfully", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        Toast.makeText(context,response.message(),Toast.LENGTH_SHORT).show()
                     }
                 }
-            })
-            Toast.makeText(context,"If this id is in the records, it will be Updated.", Toast.LENGTH_SHORT).show()
+            }
+
         }else{
-            var contentResolver= requireActivity().contentResolver
-            var cacheDir = getActivity()?.getCacheDir()
+            val contentResolver= requireActivity().contentResolver
+            val cacheDir = getActivity()?.getCacheDir()
             val parcelFileDescriptor =
                 contentResolver.openFileDescriptor(selectedImageUri!!, "r", null) ?: return
 
@@ -128,37 +115,31 @@ class updateFragment : Fragment() {
             val outputStream = FileOutputStream(file)
             inputStream.copyTo(outputStream)
             val body = UploadRequestBody(file, "image")
-            var idd = editTextUpdateId.text.toString().toInt()
-            CarApi().updateData(
-               id =idd,
-                MultipartBody.Part.createFormData(
-
-                    "image",
-                    file.name,
-                    body
-                ),
-                RequestBody.create(MediaType.parse("multipart/form-data"), nameText.text.toString()),
-                RequestBody.create(MediaType.parse("multipart/form-data"), madebyText.text.toString())
-
-
-            ).enqueue(object : Callback<RequestBody> {
-
-                override fun onFailure(call: Call<RequestBody>, t: Throwable) {
-                    t.printStackTrace()
-                }
-
-                override fun onResponse(
-                    call: Call<RequestBody>,
-                    response: Response<RequestBody>
-                ) {
-                    response.body()?.let {
+            val idd = editTextUpdateId.text.toString().toInt()
+            job = CoroutineScope(Dispatchers.IO).launch {
+                val response = CarApi().updateData(
+                    id =idd,
+                    MultipartBody.Part.createFormData(
+                        "image",
+                        file.name,
+                        body
+                    ),
+                    RequestBody.create(MediaType.parse("multipart/form-data"), nameText.text.toString()),
+                    RequestBody.create(MediaType.parse("multipart/form-data"), madebyText.text.toString())
+                )
+                withContext(Dispatchers.Main) {
+                    if(response.isSuccessful) {
+                        Toast.makeText(context,"Updated Successfully", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        Toast.makeText(context,response.message(),Toast.LENGTH_SHORT).show()
                     }
                 }
-            })
-            Toast.makeText(context,"If this id is in the records, it will be Updated.", Toast.LENGTH_SHORT).show()
+            }
         }
-
     }
-
-
+    override fun onDestroy() {
+        super.onDestroy()
+        job?.cancel()
+    }
 }

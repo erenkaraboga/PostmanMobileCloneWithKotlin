@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".fragments.deleteFragment">
+    tools:context=".fragments.DeleteFragment">
 
     <!-- TODO: Update blank fragment layout -->
 
@@ -18,14 +18,7 @@
         tools:layout_editor_absoluteY="-144dp">
 
     </androidx.recyclerview.widget.RecyclerView>
-    <ProgressBar
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:id="@+id/getprogressBar"
-        android:outlineAmbientShadowColor="@color/white"
-        />
+
 
 
 </FrameLayout>
