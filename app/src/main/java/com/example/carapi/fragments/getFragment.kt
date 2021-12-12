@@ -14,7 +14,6 @@ import com.example.carapi.model.BrandModel
 import com.example.carapi.service.CarApi
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_get.*
-import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -22,7 +21,7 @@ import retrofit2.Response
 private val BASE_URL ="https://carrestfulapi.azurewebsites.net/"
 private var brandModels : ArrayList<BrandModel>?=null
 private var recyclerViewAdapter: RecyclerViewAdapter?=null
-private var job : Job?=null
+
 class getFragment : Fragment(),RecyclerViewAdapter.Listener {
 
     override fun onStart() {
@@ -44,10 +43,13 @@ class getFragment : Fragment(),RecyclerViewAdapter.Listener {
     }
     private fun loadData(){
         var progress : ProgressBar = this.getprogressBar
-
-        job = CoroutineScope(Dispatchers.IO).launch {
-            val response = CarApi().getData()
-            withContext(Dispatchers.Main){
+        val call = CarApi().getData()
+        progress.visibility = View.VISIBLE
+        call.enqueue(object :Callback<List<BrandModel>>{
+            override fun onResponse(
+                call: Call<List<BrandModel>>,
+                response: Response<List<BrandModel>>
+            ) {
                 if (response.isSuccessful){
                     response.body()?.let {
                         brandModels= ArrayList(it)
@@ -61,12 +63,13 @@ class getFragment : Fragment(),RecyclerViewAdapter.Listener {
 
                 }
             }
-        }
+            override fun onFailure(call: Call<List<BrandModel>>, t: Throwable) {
+                t.printStackTrace()
+            }
+
+        })
+
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        job?.cancel()
-    }
 
 }
