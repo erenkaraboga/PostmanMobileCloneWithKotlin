@@ -6,10 +6,14 @@
     # Also you must change many codes in Fragments.
 # CarApiLink
     # https://github.com/erenkaraboga/CarApi
-# FeaturesUsed    
+# Features Used    
     # Retrofit
     # Glide
     # Kotlin Fragments
     # RecyclerView
     
-
+# Features to be added in the future
+    # RxJava
+    # Composite Disposable
+    # Coroutines
+    
