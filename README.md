@@ -11,6 +11,7 @@
     # Glide
     # Kotlin Fragments
     # RecyclerView
+    # Coroutines(getFragment.kt and deleteFragment.kt for now)
     
 # Features to be added in the future
      # Coroutines(For improve async programming quality)
